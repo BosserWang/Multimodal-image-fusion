@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">
+        <img src="/showHomeImage/favor_icon.jpg" width="30" height="30" class="d-inline-block align-top" alt="">
+        基于多源数据融合的夜景图像增强系统
+    </a>
+</nav>
+<div style="display: flex; flex-direction: row">
+    <div style="width: 15%; height: 93vh; ">
+        <ul class="nav navbar-dark bg-dark flex-column" style="padding-left: 20%; height: 100%;
+         background-size: 100% 100%; background-image: url('/showHomeImage/aside.jpg'); color: white;">
+            <li class="nav-item" style="margin-top: 5%">
+                <a class="nav-link" href="/detection" style="color: white;">图像融合</a>
+            </li>
+            <li class="nav-item" style="margin-top: 5%">
+                <a class="nav-link" href="/process" style="color: white;">预处理展示</a>
+            </li>
+            <li class="nav-item" style="margin-top: 5%">
+                <a class="nav-link active" href="/fusion" style="color: white;">融合展示</a>
+            </li>
+            <li class="nav-item" style="margin-top: 5%">
+                <a class="nav-link" href="/result" style="color: white;">目标检测结果展示</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/" style="color: white;">退出</a>
+            </li>
+        </ul>
+    </div>
+    <div style="margin-top: 20px; height: 90vh; margin-left: 5%; width: 90%; margin-right: 5%;">
+        <img src="/" id="show_fus_res"
+                     style="height: 90%; width: 100%; object-fit: scale-down;"
+                     class="img-fluid" alt="">
+        <p style="text-align: center;">训练后的图像融合结果</p>
+    </div>
+
+</div>
+<script src="/static/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.slim.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js"
+        integrity="sha384-7ymO4nGrkm372HoSbq1OY2DP4pEZnMiA+E0F3zPr+JQQtQ82gQ1HPY3QIVtztVua"
+        crossorigin="anonymous"></script>
+<script src="/static/global.js"></script>
+<script>
+    window.onload = function () {
+        if (getCookie("filename") == undefined || getCookie("filename") == ""){
+
+        }else{
+            $('#show_fus_res').attr("src", "/showResFusionImage/"+getCookie("filename"))
+        }
+    }
+</script>
+</body>
+</html>

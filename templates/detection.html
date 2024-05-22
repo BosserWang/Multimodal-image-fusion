@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">
+        <img src="/showHomeImage/favor_icon.jpg" width="30" height="30" class="d-inline-block align-top" alt="">
+        基于多源数据融合的夜景图像增强系统
+    </a>
+</nav>
+<div style="display: flex; flex-direction: row">
+    <div style="width: 15%; height: 93vh; ">
+        <ul class="nav navbar-dark bg-dark flex-column" style="padding-left: 20%; height: 100%;
+         background-size: 100% 100%; background-image: url('/showHomeImage/aside.jpg'); color: white;">
+            <li class="nav-item" style="margin-top: 5%">
+                <a class="nav-link active" href="/detection" style="color: white;">图像融合</a>
+            </li>
+            <li class="nav-item" style="margin-top: 5%">
+                <a class="nav-link" href="/process" style="color: white;">预处理展示</a>
+            </li>
+            <li class="nav-item" style="margin-top: 5%">
+                <a class="nav-link" href="/fusion" style="color: white;">融合展示</a>
+            </li>
+            <li class="nav-item" style="margin-top: 5%">
+                <a class="nav-link" href="/result" style="color: white;">目标检测结果展示</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/" style="color: white;">退出</a>
+            </li>
+        </ul>
+    </div>
+    <div class="row" style="width: 85%; height: 100vh">
+        <div class="col" id="init_text" style="height: 100%; width: 100%; background: black; color: white;
+max-height: 100%; overflow-y: auto;">
+
+        </div>
+        <div class="col">
+            <div style="height: 40%; display: flex; flex-direction: row">
+                <div style="width: 50%;">
+                    <div class="input-group mb-3">
+                        <div class="custom-file">
+                            <input type="file" id="file" onchange="showVisibleImage()">
+                            <label class="custom-file-label" for="file">选择文件Visible</label>
+                        </div>
+                        <!--<div class="input-group-append">
+                            <button class="input-group-text" onclick="uploadVisibleImage()" id="inputGroupFileAddon02">
+                                上传
+                            </button>
+                        </div>-->
+                    </div>
+                    <img src="..." id="show_visible_image"
+                         style="margin-top: 20px; height: auto; margin-left: 5%; width: 90%; object-fit: scale-down;"
+                         class="img-fluid" alt="">
+                </div>
+                <div style="width: 50%">
+                    <div class="input-group mb-3">
+                        <div class="custom-file">
+                            <input type="file" id="file2" onchange="showInfraredImage()">
+                            <label class="custom-file-label" for="file2">选择文件Infrared</label>
+                        </div>
+                        <div class="input-group-append">
+                            <!--<button class="input-group-text" onclick="uploadInfraredImage()" id="inputGroupFileAddon02">
+                                上传
+                            </button>-->
+                        </div>
+                    </div>
+                    <img src="..." id="show_infrared_image"
+                         style="margin-top: 20px; height: auto; margin-left: 5%; width: 90%; object-fit: scale-down;"
+                         class="img-fluid" alt="">
+                </div>
+            </div>
+            <button class="btn btn-info" id="predict_btn" style="width: 100%;" onclick="getResult()">获取预测结果</button>
+            <div style="height: 45%; display: flex; flex-direction: row" id="showResText" hidden>
+{#                <div style="width: 100%;">#}
+{#                    <img src="" id="show_dec_res"#}
+{#                         style="margin-top: 20px; height: 90%; margin-left: 5%; width: 90%; object-fit: scale-down;"#}
+{#                         class="img-fluid" alt="">#}
+{#                    <p style="text-align: center;"  >目标检测结果</p>#}
+{#                </div>#}
+            </div>
+            </div>
+
+        </div>
+    </div>
+<script src="/static/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.slim.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js"
+        integrity="sha384-7ymO4nGrkm372HoSbq1OY2DP4pEZnMiA+E0F3zPr+JQQtQ82gQ1HPY3QIVtztVua"
+        crossorigin="anonymous"></script>
+<script src="/static/global.js"></script>
+<script>
+    var timer = null, now_text = 0
+    var show_text = "Welcome to use detection model.#" +
+            "model init loading...#" +
+            "reading torch files...#" +
+            "loading params...#" +
+            "loading weights...#" +
+            "model init success!#" +
+            "now you can upload the images, and the model will predict the results based on the images and display them.#"
+    window.onload = function () {
+        changeBtn(true)
+        showText()
+    }
+    function changeBtn(value){
+        $('#file').prop('disabled', value);
+        $('#file2').prop('disabled', value);
+        $('#predict_btn').prop('disabled', value);
+    }
+    function getResult(){
+        changeBtn(true)
+        $('#show_dec_res').attr('src', '')
+        $('#show_fu_res').attr('src', '')
+        $.ajax({
+            type: 'POST',
+            url: '/getResult',
+            data: {},
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                let resp = JSON.parse(response)
+                console.log(resp)
+                show_text += 'model predict success! cost time: '+resp.msg+'#'
+                showText()
+                //$('#show_dec_res').attr('src', '/showResDetectionImage/'+resp.data)
+                setCookie("filename", resp.data)
+                $('#showResText').attr("hidden", false)
+
+            },
+            error: function (response) {
+                console.log(response);
+            }
+        });
+    }
+    function showInfraredImage() {
+        let file = $('#file2')[0].files[0]
+        $('#show_infrared_image').attr('src', getObjectURL(file))
+        $('#show_infrared_image_res').attr('src', getObjectURL(file))
+        uploadInfraredImage()
+    }
+    function showVisibleImage() {
+        let file = $('#file')[0].files[0]
+        $('#show_visible_image').attr('src', getObjectURL(file))
+        $('#show_visible_image_res').attr('src', getObjectURL(file))
+        uploadVisibleImage()
+    }
+    function uploadInfraredImage() {
+        changeBtn(true)
+        show_text += 'upload infrared image...#upload infrared image success!#'
+        showText()
+        let formData = new FormData()
+        let file = $('#file2')[0].files[0]
+        formData.append('file', file)
+        $.ajax({
+            type: 'POST',
+            url: '/getInfraredPic',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                let resp = JSON.parse(response)
+            },
+            error: function (response) {
+                console.log(response);
+            }
+        });
+    }
+    function uploadVisibleImage() {
+        changeBtn(true)
+        show_text += 'upload visible image...#upload visible image success!#'
+        showText()
+        let formData = new FormData()
+        let file = $('#file')[0].files[0]
+        formData.append('file', file)
+        $.ajax({
+            type: 'POST',
+            url: '/getVisiblePic',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                let resp = JSON.parse(response)
+            },
+            error: function (response) {
+                console.log(response);
+            }
+        });
+    }
+    function getObjectURL(file) {
+        var url = null;
+        if (window.createObjectURL != undefined) { // basic
+            url = window.createObjectURL(file);
+        } else if (window.URL != undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file);
+        } else if (window.webkitURL != undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file);
+        }
+        return url;
+    }
+
+    function showText() {
+        timer = setInterval(function () {
+            if (show_text[now_text] == '#') {
+                document.getElementById("init_text").innerHTML += '<br/>'
+
+            } else {
+                document.getElementById("init_text").innerHTML += show_text[now_text]
+            }
+            now_text++
+            if (now_text >= show_text.length) {
+                changeBtn(false)
+                clearInterval(timer)
+            }
+        }, 1)
+    }
+</script>
+</body>
+</html>
